@@ -1,0 +1,19 @@
+# Node.js 
+node_modules/ 
+
+# Python __pycache__/
+*.pyc 
+
+# Environment files 
+.env 
+
+# VS Code 
+.vscode/ 
+
+# OS files 
+.DS_Store
+
+#ML_models
+*.keras
+*.h5
+*.pkl

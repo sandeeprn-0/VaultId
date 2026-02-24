@@ -1,0 +1,313 @@
+🔥 PRIORITY 1 — Persist AI Decision in Backend (MUST)
+✅ What this means
+
+Right now:
+
+AI computes risk
+
+Backend acts on it
+
+But the decision disappears
+
+You must store the AI’s decision permanently.
+
+What to store in MongoDB (per login)
+
+anomaly_score
+
+risk_level
+
+action_taken
+
+Example (conceptual):
+
+Login Event
+ ├─ behavior features
+ ├─ anomaly_score: 0.72
+ ├─ risk_level: HIGH
+ └─ action_taken: BLOCK
+
+🎯 Why this is critical
+
+Makes system auditable
+
+Lets you prove: “AI actually controls decisions”
+
+Required for:
+
+demos
+
+reports
+
+future retraining
+
+Real systems never discard AI decisions
+
+👉 Without this, AI looks like a side experiment.
+
+🔥 PRIORITY 2 — Expose Risk Decision to Auth Flow (CRITICAL)
+✅ What this means
+
+Your AI output must control authentication, not just observe it.
+
+You define rules like:
+
+LOW → allow login → token can be issued
+
+MEDIUM → require verification → token delayed
+
+HIGH → block login → no token
+
+🔗 Why this matters to the team
+
+This is where integration happens:
+
+Ace → authentication flow
+
+Adhil → token generation
+
+They must obey your AI decision.
+
+👉 This makes your module authoritative, not optional.
+
+🔥 PRIORITY 3 — Prepare 2 HARD DEMO SCENARIOS (NON-NEGOTIABLE)
+
+You must be able to show this live, even if data is partially mocked.
+
+🟢 Scenario A — Normal User
+
+Same IP
+
+Same device
+
+Normal time gap
+
+Expected AI output:
+
+LOW risk → login allowed
+
+🔴 Scenario B — Suspicious Login
+
+IP changed
+
+Device changed
+
+Very short time gap
+
+Expected AI output:
+
+HIGH risk → login blocked
+
+Important rule
+
+Demo > purity
+
+Hard-coded test data is acceptable for demo.
+
+Reviewers care about behavior, not randomness.
+
+🔥 PRIORITY 4 — Risk Explanation Payload (Explainability)
+✅ What this means
+
+Do NOT return only:
+
+risk = HIGH
+
+
+Also return WHY.
+
+Example:
+
+Reasons:
+- ipChange
+- deviceChange
+
+
+Or more structured:
+
+ipChange: true
+deviceChange: true
+locationChange: false
+timeGap: abnormal
+
+🎯 Why this is powerful
+
+Prevents “black box AI” criticism
+
+Matches real systems (Google, Auth0, AWS)
+
+Makes demo believable and professional
+
+This is Explainable AI (XAI) at a practical level.
+
+🔥 PRIORITY 5 — Timeout / Fallback Handling (Production Thinking)
+✅ What this means
+
+AI systems can fail.
+
+If Flask ML service is down:
+
+System must NOT crash
+
+System must NOT allow blind login
+
+Correct fallback:
+
+ML unavailable → risk = MEDIUM → allow with verification
+
+🎯 Why this matters
+
+Shows real-world engineering maturity
+
+AI is not a single point of failure
+
+Guides LOVE this detail
+
+1️⃣ AI → Auth Decision Contract (MUST)
+✅ What this is
+
+Define a clear, fixed output contract from AI.
+
+Example:
+
+{
+  anomaly_score,
+  risk_level,
+  decision,
+  reasons
+}
+
+🎯 Why this matters
+
+Backend MUST follow this
+
+Auth logic MUST respect this
+
+Prevents ad-hoc decisions
+
+👉 This is how microservices are designed.
+
+2️⃣ Explainability Layer (CRITICAL)
+
+You already compute:
+
+ipChange
+
+deviceChange
+
+locationChange
+
+timeGap abnormality
+
+Now expose them clearly.
+
+This makes your AI:
+
+Trustworthy
+
+Reviewable
+
+Defensible in viva
+
+3️⃣ Adaptive Policy Engine (Beyond Simple Thresholds)
+
+Right now:
+
+score → risk
+
+
+Next:
+
+risk → policy
+
+
+Example:
+
+LOW → issue token normally
+
+MEDIUM → issue token but mark session “elevated”
+
+HIGH → no token
+
+This shows:
+
+Decision intelligence
+
+Policy control
+
+Real-world thinking
+
+4️⃣ Session Risk Memory (Advanced but Valuable)
+✅ What this means
+
+Remember previous risk per user/session.
+
+Why?
+
+Prevents flip-flopping
+
+Adds continuity
+
+Models real adaptive auth
+
+Example:
+
+Last login: MEDIUM
+Current login: MEDIUM
+→ Escalate to HIGH
+
+5️⃣ Fail-Safe Logic (Production Grade)
+
+If ML fails:
+
+Default to MEDIUM
+
+Never default to LOW
+
+Never block blindly
+
+This proves:
+
+AI is advisory but powerful
+
+System remains usable
+
+6️⃣ Two DEMO MODES (MANDATORY)
+
+You already listed this correctly.
+
+You must be able to switch between:
+
+Normal user demo
+
+Attacker demo
+
+Even if logic is partially forced.
+
+7️⃣ AI Ownership Boundary (VERY IMPORTANT)
+
+You defined this PERFECTLY.
+
+You DO:
+
+Calculate risk
+
+Decide action
+
+Explain decision
+
+You DO NOT:
+
+Issue tokens
+
+Handle UI
+
+Block APIs directly
+
+This makes your role:
+
+Clean
+
+Independent
+
+Strong in group evaluation
