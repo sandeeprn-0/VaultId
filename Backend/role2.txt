@@ -1,0 +1,152 @@
+Continuous Risk Monitoring (After Login)
+🟥 Mandatory
+Right now: Risk is checked only during login.
+But Zero Trust says:
+“Never trust. Always verify.”
+So after login:
+monitor user actions
+detect abnormal behavior
+update risk score dynamically
+🔹 What to implement
+Add risk check on:
+Token usage frequency
+Sudden IP change mid-session
+Abnormal API burst
+Token reuse from different device
+🔹 Simple implementation idea
+Add middleware:
+Copy code
+Js
+app.use("/protected-route", riskCheckMiddleware)
+Middleware:
+fetch last risk
+re-evaluate behavior
+revoke token if needed
+🗣 What to say in viva
+“Risk evaluation is continuous. The system reassesses trust during session lifecycle.”
+2️⃣ Advanced Feature Engineering
+🟥 Mandatory (at least partially)
+Right now you use:
+timeGap
+ipChange
+deviceChange
+locationChange
+Good start — but basic.
+🔹 Add these features
+Behavioral:
+login_hour (late night suspicious)
+failed_attempt_count
+session_duration
+login_frequency_per_day
+Network:
+ASN change
+proxy detection
+impossible travel distance
+Token-level:
+token_age
+token_reuse_count
+signature_validation_flag
+Why this matters
+More features → better detection
+Makes model look serious
+🗣 Viva line
+“We enhanced behavioral granularity to reduce false positives and increase contextual understanding.”
+3️⃣ Adaptive / Dynamic Thresholds
+🟡 Important
+Right now:
+Copy code
+
+score < 0.3 → LOW
+Static threshold.
+Better approach: Dynamic thresholds based on:
+user trust history
+device familiarity
+organization risk appetite
+Example:
+Trusted user:
+Copy code
+
+HIGH only if score > 0.75
+New user:
+Copy code
+
+HIGH if score > 0.5
+Why impressive?
+Shows you understand: AI ≠ fixed rule
+Risk tolerance varies
+4️⃣ Model Improvement & Retraining Strategy
+🟥 Mandatory (for academic credibility)
+Explain how model evolves.
+🔹 Implement:
+Periodic retraining:
+collect new logs
+label suspicious events
+retrain monthly
+Save versioned models:
+Copy code
+
+vaultid_model_v1.keras
+vaultid_model_v2.keras
+🔹 Add:
+Model version tracking in DB:
+Copy code
+
+modelVersion: "v1.2"
+🗣 Viva answer
+“We adopt continuous learning to prevent model drift.”
+5️⃣ Model Evaluation Metrics
+🟥 Mandatory for report
+Add:
+Accuracy
+Precision
+Recall
+F1 Score
+Confusion Matrix
+ROC curve (optional)
+Why important?
+Without metrics: AI has no validation.
+🗣 Viva answer
+“We evaluated using recall to minimize false negatives in security-sensitive contexts.”
+6️⃣ AI Explainability
+🟥 Mandatory for strong demo
+Currently:
+Copy code
+
+riskLevel: HIGH
+But WHY?
+Add:
+Copy code
+Json
+"reasons": {
+  "ipChange": true,
+  "deviceChange": true,
+  "timeGap": "abnormal"
+}
+Why powerful?
+Removes black-box criticism.
+Reviewers love this.
+7️⃣ Performance Optimization & Scalability
+🟡 Important (if asked about production)
+Add:
+Load model once (already done ✔)
+Use Gunicorn instead of Flask dev server
+Add request timeout handling
+Cache frequent users
+Optional:
+Dockerize ML service
+8️⃣ Zero Trust & Token Revocation Integration
+🟥 Mandatory (very important for your role)
+Right now: You return decision.
+But full Zero Trust means:
+If risk becomes HIGH mid-session:
+→ revoke token
+→ force re-authentication
+Implementation idea:
+Maintain:
+Copy code
+
+userSessionRisk table
+If risk escalates:
+Copy code
+
+invalidate JWT

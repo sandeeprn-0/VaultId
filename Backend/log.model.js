@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const LogSchema = new mongoose.Schema({
     userId: String,
+    action: String,
 
     // --------------------------
     // Raw environment info
