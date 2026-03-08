@@ -17,6 +17,7 @@ app.use(express.json());
 
 const PORT = 3000;
 
+
 // ======================================
 // MongoDB Connection
 // ======================================
@@ -58,6 +59,34 @@ const logUserAction = async (userId, action, req)=>{
    region,
    city
  });
+
+};
+
+
+// ======================================
+// Generate LSTM Sequence From Logs
+// ======================================
+const generateSequence = async (userId)=>{
+
+ const SEQ_LEN = 5;
+
+ const logs = await Log.find({userId})
+ .sort({timestamp:1});
+
+ if(logs.length < SEQ_LEN){
+   return null;
+ }
+
+ const features = logs.map(log=>[
+   log.timeGap,
+   log.ipChange,
+   log.deviceChange,
+   log.locationChange
+ ]);
+
+ const latestSequence = features.slice(-SEQ_LEN);
+
+ return latestSequence;
 
 };
 
@@ -142,9 +171,9 @@ app.post("/login-risk", async(req,res)=>{
 
    const now = Date.now();
 
-   // ==========================
-   // Get last login
-   // ==========================
+   // =================================
+   // Get Previous Login
+   // =================================
    const lastLog = await Log.findOne({userId})
    .sort({timestamp:-1});
 
@@ -169,33 +198,20 @@ app.post("/login-risk", async(req,res)=>{
 
    }
 
-   // ==========================
-   // Sequence generation
-   // ==========================
-   const SEQ_LEN = 5;
+   // =================================
+   // Automatic Sequence Generation
+   // =================================
+   const sequence = await generateSequence(userId);
 
-   const logs = await Log.find({userId})
-   .sort({timestamp:1});
+   let anomalyScore = 0;
+   let riskLevel = "LOW";
+   let actionTaken = "ALLOW";
 
-   let anomalyScore=0;
-   let riskLevel="LOW";
-   let actionTaken="ALLOW";
-
-   if(logs.length >= SEQ_LEN){
-
-     const features = logs.map(l=>[
-       l.timeGap,
-       l.ipChange,
-       l.deviceChange,
-       l.locationChange
-     ]);
-
-     const latestSequence =
-     features.slice(-SEQ_LEN);
+   if(sequence){
 
      const mlResponse = await axios.post(
      "http://127.0.0.1:5000/predict",
-     {sequence:latestSequence}
+     {sequence}
      );
 
      anomalyScore =
@@ -222,9 +238,9 @@ app.post("/login-risk", async(req,res)=>{
 
    }
 
-   // ==========================
-   // Save login log
-   // ==========================
+   // =================================
+   // Save Login Log
+   // =================================
    await Log.create({
 
      userId,
@@ -244,9 +260,10 @@ app.post("/login-risk", async(req,res)=>{
 
    });
 
-   // ==========================
-   // Update Session
-   // ==========================
+
+   // =================================
+   // Update Session Risk
+   // =================================
    await Session.findOneAndUpdate(
 
      {userId},
@@ -307,7 +324,7 @@ async(req,res)=>{
 
 
 // ======================================
-// Check Session Status (For Auth Service)
+// Session Status API (For Auth Service)
 // ======================================
 app.get("/session-status/:userId", async(req,res)=>{
 
@@ -323,8 +340,10 @@ app.get("/session-status/:userId", async(req,res)=>{
  }
 
  res.json({
+
    sessionActive:session.isActive,
    riskLevel:session.currentRisk
+
  });
 
 });
